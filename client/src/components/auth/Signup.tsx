@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Mail, User, Lock } from "lucide-react";
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Signup = () => {
     const [formData, setFormData] = useState({
@@ -12,11 +11,12 @@ const Signup = () => {
     });
 
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     const { mutate, isError, isPending, error } = useMutation({
         mutationFn: async ({ email, fullName, password }: typeof formData) => {
             try {
-                const res = await fetch(`${BASE_URL}/api/auth/signup`, {
+                const res = await fetch(`http://localhost:3000/api/auth/signup`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -28,13 +28,13 @@ const Signup = () => {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || "Failed to create account");
                 return data;
-            } catch (err) {
-                console.error(err);
-                throw err;
+            } catch (err: any) {
+                throw new Error(err.message || "Signup failed");
             }
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["authUser"] });
+            navigate("/");
         },
     });
 
@@ -48,73 +48,73 @@ const Signup = () => {
     };
 
     return (
-        <div className="max-w-screen-xl mx-auto flex h-screen px-10 bg-gray-50">
-            <div className="flex-1 flex flex-col justify-center items-center">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+            <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+                <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Join today.</h2>
                 <form
-                    className="lg:w-2/3 mx-auto md:mx-20 flex gap-4 flex-col"
+                    className="flex flex-col gap-4"
                     onSubmit={handleSubmit}
                 >
-                    {/* Heading */}
-                    <h1 className="text-4xl font-extrabold text-gray-800">Join today.</h1>
-
-                    {/* Email */}
-                    <label className="input input-bordered rounded flex items-center gap-2 bg-white border-gray-300">
-                        <Mail className="w-5 h-5 text-gray-500" />
-                        <input
-                            type="email"
-                            className="grow bg-transparent outline-none text-gray-800 placeholder-gray-400"
-                            placeholder="Email"
-                            name="email"
-                            onChange={handleInputChange}
-                            value={formData.email}
-                            required
-                        />
-                    </label>
-
                     {/* Full Name */}
-                    <label className="input input-bordered rounded flex items-center gap-2 bg-white border-gray-300">
-                        <User className="w-5 h-5 text-gray-500" />
+                    <div className="relative">
                         <input
                             type="text"
-                            className="grow bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 text-gray-800 placeholder-gray-400"
                             placeholder="Full Name"
                             name="fullName"
                             onChange={handleInputChange}
                             value={formData.fullName}
                             required
                         />
-                    </label>
+                        <User className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    </div>
+
+                    {/* Email */}
+                    <div className="relative">
+                        <input
+                            type="email"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 text-gray-800 placeholder-gray-400"
+                            placeholder="Email"
+                            name="email"
+                            onChange={handleInputChange}
+                            value={formData.email}
+                            required
+                        />
+                        <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    </div>
 
                     {/* Password */}
-                    <label className="input input-bordered rounded flex items-center gap-2 bg-white border-gray-300">
-                        <Lock className="w-5 h-5 text-gray-500" />
+                    <div className="relative">
                         <input
                             type="password"
-                            className="grow bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 text-gray-800 placeholder-gray-400"
                             placeholder="Password"
                             name="password"
                             onChange={handleInputChange}
                             value={formData.password}
                             required
                         />
-                    </label>
+                        <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    </div>
 
                     {/* Submit */}
-                    <button className="btn rounded-full btn-primary text-white hover:opacity-90">
-                        {isPending ? "Loading..." : "Sign up"}
+                    <button
+                        type="submit"
+                        className="w-full py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors duration-200"
+                        disabled={isPending}
+                    >
+                        {isPending ? "Signing up..." : "Sign up"}
                     </button>
 
                     {/* Error */}
-                    {isError && <p className="text-red-500">{error?.message}</p>}
+                    {isError && <p className="text-red-500 text-center text-sm mt-2">{error?.message}</p>}
                 </form>
 
                 {/* Already have account */}
-                <div className="flex flex-col lg:w-2/3 gap-2 mt-4 text-gray-700">
-                    <p className="text-lg">Already have an account?</p>
-                    <Link to="/login">
-                        <button className="btn rounded-full btn-outline border-gray-400 text-gray-700 hover:bg-gray-100 w-full">
-                            Sign in
-                        </button>
+                <div className="text-center mt-6 text-gray-700">
+                    <p>Already have an account?</p>
+                    <Link to="/login" className="text-blue-600 font-semibold hover:underline mt-1 inline-block">
+                        Sign in
                     </Link>
                 </div>
             </div>

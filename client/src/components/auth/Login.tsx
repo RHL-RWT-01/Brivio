@@ -1,15 +1,17 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mail, Lock, User } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 const Login = () => {
     const [formData, setFormData] = useState({
-        fullName: "",
         email: "",
         password: "",
     });
 
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     const {
         mutate: loginMutation,
@@ -17,7 +19,7 @@ const Login = () => {
         isError,
         error,
     } = useMutation({
-        mutationFn: async ({ email, password, fullName }: { email: string; password: string; fullName: string }) => {
+        mutationFn: async ({ email, password }: { email: string; password: string }) => {
             try {
                 const res = await fetch(`http://localhost:3000/api/auth/login`, {
                     method: "POST",
@@ -25,7 +27,7 @@ const Login = () => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ fullName, email, password }),
+                    body: JSON.stringify({ email, password }),
                 });
 
                 const data = await res.json();
@@ -39,6 +41,7 @@ const Login = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["authUser"] });
+            navigate("/");
         },
     });
 
@@ -50,71 +53,61 @@ const Login = () => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+
     return (
-        <div className="max-w-screen-xl mx-auto flex h-screen bg-gray-50">
-            <div className="flex-1 flex flex-col justify-center items-center">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+            <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+                <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Login</h2>
                 <form
-                    className="flex gap-4 flex-col w-full max-w-sm"
+                    className="flex flex-col gap-4"
                     onSubmit={handleSubmit}
                 >
-                    {/* Full Name */}
-                    <label className="input input-bordered rounded flex items-center gap-2 bg-white border-gray-300">
-                        <User className="w-5 h-5 text-gray-500" />
-                        <input
-                            type="text"
-                            className="grow bg-transparent outline-none text-gray-800 placeholder-gray-400"
-                            placeholder="Full Name"
-                            name="fullName"
-                            onChange={handleInputChange}
-                            value={formData.fullName}
-                            required
-                        />
-                    </label>
-
                     {/* Email */}
-                    <label className="input input-bordered rounded flex items-center gap-2 bg-white border-gray-300">
-                        <Mail className="w-5 h-5 text-gray-500" />
+                    <div className="relative">
                         <input
                             type="email"
-                            className="grow bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 text-gray-800 placeholder-gray-400"
                             placeholder="Email"
                             name="email"
                             onChange={handleInputChange}
                             value={formData.email}
                             required
                         />
-                    </label>
+                        <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    </div>
 
                     {/* Password */}
-                    <label className="input input-bordered rounded flex items-center gap-2 bg-white border-gray-300">
-                        <Lock className="w-5 h-5 text-gray-500" />
+                    <div className="relative">
                         <input
                             type="password"
-                            className="grow bg-transparent outline-none text-gray-800 placeholder-gray-400"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 text-gray-800 placeholder-gray-400"
                             placeholder="Password"
                             name="password"
                             onChange={handleInputChange}
                             value={formData.password}
                             required
                         />
-                    </label>
+                        <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    </div>
 
                     {/* Submit Button */}
-                    <button className="btn rounded-full btn-primary text-white hover:opacity-90">
-                        {isPending ? "Loading..." : "Login"}
+                    <button
+                        type="submit"
+                        className="w-full py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors duration-200"
+                        disabled={isPending}
+                    >
+                        {isPending ? "Logging in..." : "Login"}
                     </button>
 
                     {/* Error Message */}
-                    {isError && <p className="text-red-500">{error?.message}</p>}
+                    {isError && <p className="text-red-500 text-center text-sm mt-2">{error?.message}</p>}
                 </form>
 
                 {/* Sign Up Link */}
-                <div className="flex flex-col gap-2 mt-4 text-gray-700">
-                    <p className="text-lg">{"Don't"} have an account?</p>
-                    <Link to="/signup">
-                        <button className="btn rounded-full btn-outline border-gray-400 text-gray-700 hover:bg-gray-100 w-full">
-                            Sign up
-                        </button>
+                <div className="text-center mt-6 text-gray-700">
+                    <p>Don't have an account?</p>
+                    <Link to="/signup" className="text-blue-600 font-semibold hover:underline mt-1 inline-block">
+                        Sign up here
                     </Link>
                 </div>
             </div>

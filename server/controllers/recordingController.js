@@ -4,6 +4,7 @@ import { processAudioJob } from "../utils/audioProcessor.js";
 import Recording from "../models/recordingModel.js";
 import { getAudioDuration } from "../utils/getDuration.js";
 import { error } from "console";
+import { addJob } from "../utils/redisQueue.js";
 
 // Your existing Multer setup
 const storage = multer.diskStorage({
@@ -38,7 +39,7 @@ export const createRecording = async (req, res) => {
         const duration = await getAudioDuration(req.file.path);
         const MAX_DURATION_SECONDS = 60 * 10;
         if (duration > MAX_DURATION_SECONDS) {
-            await fs.unlink(req.file.path);
+            await fsp.unlink(req.file.path);
             return res.status(400).json({ error: "Audio duration must not exceed 10 minutes." });
         }
 
@@ -48,9 +49,9 @@ export const createRecording = async (req, res) => {
             status: "uploaded",
             duration: duration,
         });
-
         await newRecording.save();
-        processAudioJob(newRecording._id);
+
+        await addJob({ recordingId: newRecording._id });
 
         res.status(202).json({
             message: "Recording uploaded successfully and is being processed.",

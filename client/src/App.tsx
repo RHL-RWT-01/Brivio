@@ -1,16 +1,33 @@
-import { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Loader from "./components/Loader";
-import AllRecordings from "./components/AllRecordings";
-import NewRecording from "./components/NewRecording";
+import AllRecordings from "./components/Recording/AllRecordings";
+import NewRecording from "./components/Recording/NewRecording";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
+import { useQuery } from "@tanstack/react-query";
 
 function App() {
-  // Temporary mocked auth state
-  const isLoading = false;
-  const authUser = { name: "Test User" }; // change to null when logged out
+
+  const { data: authUser, isLoading } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/auth/me`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (data.error) return null;
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data;
+      } catch (error: any) {
+        throw new Error(error.message || "Failed to fetch user data");
+      }
+    },
+    retry: false,
+  });
 
   if (isLoading) {
     return (
@@ -24,28 +41,36 @@ function App() {
     <div className="flex min-h-screen bg-gray-50">
       {authUser && <Sidebar />}
 
-      <div className="flex-1 p-4">
+      <div className="flex-1 ">
         <Routes>
-          {/* Protected Routes */}
-          {authUser ? (
-            <>
-              <Route path="/" element={<Navigate to="/new" replace />} />
-              <Route path="/new" element={<NewRecording />} />
-              <Route path="/all" element={<AllRecordings />} />
-            </>
-          ) : (
-            <>
-              {/* Redirect to login if not logged in */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
-            </>
-          )}
+          {/* Public Routes - Redirect authenticated users away from these */}
+          <Route
+            path="/login"
+            element={authUser ? <Navigate to="/all" replace /> : <Login />}
+          />
+          <Route
+            path="/signup"
+            element={authUser ? <Navigate to="/all" replace /> : <Signup />}
+          />
 
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          {/* Protected Routes - Redirect unauthenticated users to login */}
+          <Route
+            path="/new"
+            element={authUser ? <NewRecording /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/all"
+            element={authUser ? <AllRecordings /> : <Navigate to="/login" replace />}
+          />
 
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Default route for authenticated users */}
+          <Route
+            path="/"
+            element={authUser ? <Navigate to="/all" replace /> : <Navigate to="/login" replace />}
+          />
+
+          {/* Catch-all for unknown routes */}
+          <Route path="*" element={<Navigate to="/all" replace />} />
         </Routes>
       </div>
     </div>

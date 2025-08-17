@@ -3,6 +3,7 @@ import multer from "multer";
 import { processAudioJob } from "../utils/audioProcessor.js";
 import Recording from "../models/recordingModel.js";
 import { getAudioDuration } from "../utils/getDuration.js";
+import { error } from "console";
 
 // Your existing Multer setup
 const storage = multer.diskStorage({
@@ -45,6 +46,7 @@ export const createRecording = async (req, res) => {
             user: req.user._id,
             filePath: req.file.path,
             status: "uploaded",
+            duration: duration,
         });
 
         await newRecording.save();
@@ -85,7 +87,7 @@ export const getAllRecordings = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
 
         const recordings = await Recording.find({ user: userId, status: "completed" })
-            .select("title duration createdAt")
+            .select("status title duration createdAt")
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit);
@@ -94,6 +96,21 @@ export const getAllRecordings = async (req, res) => {
         console.log("Fetched recordings:", recordings);
     } catch (error) {
         console.error("Error fetching recordings:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const processing = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const recording = await Recording.find({ user: userId, status: "processing" })
+        if (recording && recording.length > 0) {
+            return res.status(200).json({ error: "Your last recording is processing, You have to wait to upload new recording", recording: recording });
+        }
+
+        res.status(200).json({ message: "No recording is currently being processed." });
+    } catch (error) {
+        console.error("Error fetching processing recordings:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };

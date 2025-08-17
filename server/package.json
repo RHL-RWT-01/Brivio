@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "concurrently \"nodemon index.js\" \"nodemon redisWorker.js\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -23,6 +23,7 @@
     "mp3-duration": "^1.1.0",
     "multer": "^2.0.2",
     "nodemon": "^3.1.10",
-    "openai": "^5.12.2"
+    "openai": "^5.12.2",
+    "redis": "^5.8.1"
   }
 }

@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
-
-const userSchema = new mongoose.Schema({
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var mongoose_1 = require("mongoose");
+var userSchema = new mongoose_1.Schema({
     fullName: {
         type: String,
         required: true,
@@ -13,9 +14,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
+        select: false,
     },
 }, { timestamps: true });
-
-const User = mongoose.model("User", userSchema);
-
-export default User;
+var User = mongoose_1.default.model("User", userSchema);
+exports.default = User;

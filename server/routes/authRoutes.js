@@ -1,10 +1,10 @@
-import express from 'express';
-import { getMe, login, signup } from '../controllers/authController.js';
-import { protectRoute } from '../middlewares/protectRoute.js';
-const authRouter = express.Router();
-
-authRouter.post('/login', login);
-authRouter.post('/signup', signup);
-authRouter.get('/me', protectRoute, getMe);
-
-export default authRouter;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = require("express");
+var authController_js_1 = require("../controllers/authController.js");
+var protectRoute_js_1 = require("../middlewares/protectRoute.js");
+var authRouter = express_1.default.Router();
+authRouter.post("/login", authController_js_1.login);
+authRouter.post("/signup", authController_js_1.signup);
+authRouter.get("/me", protectRoute_js_1.protectRoute, authController_js_1.getMe);
+exports.default = authRouter;

@@ -1,13 +1,11 @@
-import express from 'express';
-import { protectRoute } from '../middlewares/protectRoute.js';
-import { createRecording, getAllRecordings, getRecordingById, processing } from '../controllers/recordingController.js';
-
-const recordingRouter = express.Router();
-
-recordingRouter.post('/new', protectRoute, createRecording);
-recordingRouter.get('/processing', protectRoute, processing);
-recordingRouter.get('/all', protectRoute, getAllRecordings);
-recordingRouter.get('/:id', protectRoute, getRecordingById);
-
-
-export default recordingRouter;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = require("express");
+var protectRoute_js_1 = require("../middlewares/protectRoute.js");
+var recordingController_js_1 = require("../controllers/recordingController.js");
+var recordingRouter = express_1.default.Router();
+recordingRouter.post('/new', protectRoute_js_1.protectRoute, recordingController_js_1.createRecording);
+recordingRouter.get('/processing', protectRoute_js_1.protectRoute, recordingController_js_1.processing);
+recordingRouter.get('/all', protectRoute_js_1.protectRoute, recordingController_js_1.getAllRecordings);
+recordingRouter.get('/:id', protectRoute_js_1.protectRoute, recordingController_js_1.getRecordingById);
+exports.default = recordingRouter;

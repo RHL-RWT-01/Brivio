@@ -86,8 +86,9 @@ function SidePanel({ id, setSelectedRecording }: { id: string, setSelectedRecord
                         <p className="text-gray-500 text-xs">Duration</p>
                         <h3 className="font-semibold text-lg">
                             {String(Math.floor(recording.duration / 60)).padStart(2, "0")}:
-                            {String(recording.duration % 60).padStart(2, "0")}
+                            {String(Math.floor(recording.duration) % 60).padStart(2, "0")}
                         </h3>
+
                     </div>
                 </div>
 

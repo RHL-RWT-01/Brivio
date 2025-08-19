@@ -64,24 +64,32 @@ export default function RecordingList() {
     };
 
     useEffect(() => {
-        if (isFetchingNextPage || !loaderRef.current) return;
-
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasNextPage) {
+    const observer = new IntersectionObserver(
+        (entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
                 fetchNextPage();
             }
-        }, {
+        },
+        {
             root: null,
             rootMargin: '200px',
             threshold: 1.0,
-        });
+        }
+    );
 
-        observer.observe(loaderRef.current);
+    const loaderElement = loaderRef.current;
+    
+    // Only observe the loader element if it exists and we have more pages
+    if (loaderElement && hasNextPage) {
+        observer.observe(loaderElement);
+    }
 
-        return () => {
-            if (loaderRef.current) observer.unobserve(loaderRef.current);
-        };
-    }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
+    return () => {
+        if (loaderElement) {
+            observer.unobserve(loaderElement);
+        }
+    };
+}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     if (isLoading) {
         return (
@@ -123,7 +131,7 @@ export default function RecordingList() {
                                 <span>{new Date(rec.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</span>
                                 <span>
                                     {String(Math.floor(rec.duration / 60)).padStart(2, "0")}:
-                                    {String(rec.duration % 60).padStart(2, "0")}
+                                    {String(Math.floor(rec.duration) % 60).padStart(2, "0")}
                                 </span>
                             </div>
                         </div>

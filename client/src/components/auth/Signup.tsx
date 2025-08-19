@@ -13,7 +13,7 @@ const Signup = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
-    const { mutate, isError, isPending, error } = useMutation({
+    const { mutate: signupMutation, isError, isPending, error } = useMutation({
         mutationFn: async ({ email, fullName, password }: typeof formData) => {
             try {
                 const res = await fetch(`http://localhost:3000/api/auth/signup`, {
@@ -40,7 +40,7 @@ const Signup = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        mutate(formData);
+        signupMutation(formData);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
